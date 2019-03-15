@@ -66,7 +66,7 @@ while True:
     route = resolved_routes[0] if resolved_routes else None
     if route:
         controller = route.get('controller')
-        response = controller(request.get('data'), request)
+        response = controller(request)
 
     else:
         response = {

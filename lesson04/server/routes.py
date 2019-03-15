@@ -9,7 +9,7 @@ def get_server_routes():
         reduce(
             lambda modules, dir: modules + [import_module(f'{dir}.routes')],
             filter(
-                lambda itm: os.path.isdir(itm) and itm != '__pycache__',
+                lambda itm: os.path.isdir(itm) and itm != '__pycache__' and itm != '.pytest_cache',
                 os.listdir()
             ),
             []
