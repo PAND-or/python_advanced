@@ -1,31 +1,24 @@
 #!/usr/bin/python3
 __author__ = "Андрей Петров"
 
-
 import sys
-import os
+
+
+
 import json
 import socket
 import argparse
-import logging
-from datetime import datetime
+
+
+
+
 
 from protocol import (
     validate_request, make_response,
     make_400, make_404
 )
 from routes import resolve
-
-logger = logging.getLogger('default')
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler('default.log')
-
-handler.setFormatter(formatter)
-handler.setLevel(logging.DEBUG)
-
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
-
+from server_log_config import logger
 
 def createParser():
     parser = argparse.ArgumentParser()
@@ -42,11 +35,6 @@ sock = socket.socket()
 sock.bind((args.addr, int(args.port)))
 sock.listen(5)
 
-
-## Без этого не работал код из урока
-#os.chdir('server')
-#sys.path.append(os.getcwd())
-##
 
 try:
     while True:
@@ -65,17 +53,21 @@ try:
                 try:
                     response = controller(request)
                 except Exception:
+                    logger.critical(f'error 500 controller: {controller}')
                     response = make_response(
                         request, 500,
                         error='Internal server error.'
                     )
             else:
+                logger.critical(f"error 404 controller: {request.get('action')} not found")
                 response = make_404(request)
         else:
             response = make_400(request)
+            logger.critical(f"error 400 bad request: {request}")
 
         response_string = json.dumps(response)
         client.send(response_string.encode('utf-8'))
         client.close()
+        logger.debug(f"client {address} closed")
 except KeyboardInterrupt:
     sock.close()

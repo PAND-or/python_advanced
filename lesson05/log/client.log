@@ -1,0 +1,7 @@
+
+2019-03-19 03:05:05,291 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-19 03:10:20,565 - DEBUG - client - __main__ - Response Message: Hi vASYA
+2019-03-19 03:10:29,685 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-19 03:11:09,124 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-19 03:11:14,589 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-19 03:11:57,166 - DEBUG - client - __main__ - Response Message: Hi gfd

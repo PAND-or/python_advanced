@@ -1,0 +1,5 @@
+2019-03-19 03:10:13,134 - DEBUG - __main__ - Client detected ('127.0.0.1', 64775)
+2019-03-19 03:10:20,565 - DEBUG - __main__ - client ('127.0.0.1', 64775) closed
+2019-03-19 03:10:56,456 - DEBUG - __main__ - Client detected ('127.0.0.1', 64819)
+2019-03-19 03:11:50,998 - DEBUG - __main__ - Client detected ('127.0.0.1', 64851)
+2019-03-19 03:11:57,166 - DEBUG - __main__ - client ('127.0.0.1', 64851) closed
