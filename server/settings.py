@@ -5,5 +5,5 @@ BASE_DIR = os.path.dirname(
 )
 
 INSTALLED_MODULES = [
-    'text', 'presence'
+    'text', 'presence', 'exception'
 ]

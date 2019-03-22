@@ -40,7 +40,7 @@ try:
     while True:
         # принимает сообщение клиента;
         client, address = sock.accept()
-        logger.debug(f'Client detected {address}')
+        logger.info(f'Client detected {address}')
 
         data = client.recv(1024)
         request = json.loads(
@@ -52,8 +52,8 @@ try:
             if controller:
                 try:
                     response = controller(request)
-                except Exception:
-                    logger.critical(f'error 500 controller: {controller}')
+                except Exception as err:
+                    logger.critical(err, exc_info=True)
                     response = make_response(
                         request, 500,
                         error='Internal server error.'
@@ -65,9 +65,13 @@ try:
             response = make_400(request)
             logger.critical(f"error 400 bad request: {request}")
 
+        if response.get('code') == 400:
+            logger.error(f'Bad Request: { action_name } request: { request }')
+
         response_string = json.dumps(response)
         client.send(response_string.encode('utf-8'))
         client.close()
-        logger.debug(f"client {address} closed")
+        logger.info(f"client {address} closed")
 except KeyboardInterrupt:
+    logger.info(f"client {address} closed")
     sock.close()
