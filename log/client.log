@@ -1,3 +1,26 @@
 2019-03-22 23:36:02,696 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
 2019-03-22 23:36:10,249 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
 2019-03-22 23:36:23,476 - DEBUG - client - __main__ - Response Message: Hi Vasya
+2019-03-23 11:25:04,037 - DEBUG - client - __main__ - Response Message: Hi Ggg
+2019-03-23 11:25:11,259 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 11:25:22,627 - DEBUG - client - __main__ - Response Message: Hi gfd
+2019-03-23 11:25:30,862 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 11:25:40,404 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:13:24,608 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:14:04,399 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:16:05,126 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:18:41,129 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:19:35,400 - DEBUG - client - __main__ - Response Message: Hi gfdgfd
+2019-03-23 12:20:32,307 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:21:07,810 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:21:47,540 - CRITICAL - client - __main__ - Error request: Wrong request format
+2019-03-23 12:22:47,865 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:23:13,817 - CRITICAL - client - __main__ - Error request: Wrong request format
+2019-03-23 12:23:32,678 - CRITICAL - client - __main__ - Error request: Wrong request format
+2019-03-23 12:24:35,061 - DEBUG - client - __main__ - Response Message: Hi gd
+2019-03-23 12:48:59,584 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 12:49:09,084 - DEBUG - client - __main__ - Response Message: Hi fds
+2019-03-23 12:49:15,536 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 13:23:06,491 - INFO - client - __main__ - client closed
+2019-03-23 13:23:06,560 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777
+2019-03-23 13:23:06,560 - CRITICAL - client - __main__ - client cant conntect to host:localhost port7777

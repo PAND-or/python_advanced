@@ -21,6 +21,7 @@ import sys
 import argparse
 import socket
 import json
+import hashlib
 from datetime import datetime
 from client_log_config import logger
 
@@ -29,6 +30,7 @@ def createParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('host', nargs='?', default='localhost')
     parser.add_argument('port',  nargs='?', default='7777')
+    parser.add_argument('-m', '--mode', nargs='?', type=str, default='w')
     return parser
 
 
@@ -38,55 +40,84 @@ args = parser.parse_args(sys.argv[1:])
 
 port = int(re.search('[0-9]{2,}', args.port).group(0))
 
-
-sock = socket.socket()
 try:
+    sock = socket.socket()
     sock.connect((args.host, port))
 
-    # сформировать presence-сообщение;
-    # В формате JIM
+    if args.mode == 'w':
+        while True:
+            # сформировать presence-сообщение;
+            # В формате JIM
 
-    msg_presence = json.dumps(
-        {
-            "action": "presence",
-            "time": datetime.now().timestamp(),
-            "type": "status",
-            "user": {
-                    "account_name":  input("Enter user Name: "),
-                    "status": input("Status message: ")
-            }
-        }
-    )
-    """
-    msg_action = json.dumps(
-        {
-            "action": input("Enter action (lower_text): "),
-            "data": input("Enter data: ")
-        }
-    )
-    #sock.send(msg_action.encode())
-    """
+            hash_obj = hashlib.sha1()
+            hash_obj.update(b'secret_key')
 
-    # отправить сообщение серверу;
-    sock.send(msg_presence.encode())
-
-
-    # получить ответ сервера;
-    data = sock.recv(1024)
-    response = json.loads(
-        data.decode('utf-8')
-    )
-    # разобрать сообщение сервера;
-
-    if response.get('response') == 200:
-        if response.get('alert'):
-            logger.debug(f"Response Message: {response.get('alert')}")
-            print(
-                f"Response Message: {response.get('alert')}"
+            msg_presence = json.dumps(
+                {
+                    "action": "presence",
+                    "time": datetime.now().timestamp(),
+                    "type": "status",
+                    "user": {
+                            "account_name":  input("Enter user Name: "),
+                            "status": input("Status message: ")
+                    }
+                }
             )
-    else:
-        logger.critical(f"Error request: {response.get('error')}")
+            # отправить сообщение серверу;
+            sock.send(msg_presence.encode())
+            """
+            msg_action = json.dumps(
+                {
+                    "action": input("Enter action (lower_text): "),
+                    "data": input("Enter data: ")
+                }
+            )
+        
+            sock.send(msg_action.encode())
+             """
+            while True:
+                # получить ответ сервера;
+                data = sock.recv(1024)
+                response = json.loads(
+                    data.decode('utf-8')
+                )
+                # разобрать сообщение сервера;
 
+                if response.get('response') == 200:
+                    if response.get('alert'):
+                        logger.debug(f"Response Message: {response.get('alert')}")
+                        print(
+                            f"Response Message: {response.get('alert')}"
+                        )
+                    sock.close()
+                    break
+                else:
+                    logger.critical(f"Error request: {response.get('error')}")
+
+    else:
+        while True:
+            # получить ответ сервера;
+            data = sock.recv(1024)
+            response = json.loads(
+                data.decode('utf-8')
+            )
+            # разобрать сообщение сервера;
+
+            if response.get('response') == 200:
+                if response.get('alert'):
+                    logger.debug(f"Response Message: {response.get('alert')}")
+                    print(
+                        f"Response Message: {response.get('alert')}"
+                    )
+                sock.close()
+                break
+            else:
+                logger.critical(f"Error request: {response.get('error')}")
+
+    #sock.close()
+except KeyboardInterrupt:
+    logger.info(f"client closed")
     sock.close()
+
 except Exception:
     logger.critical(f'client cant conntect to host:{args.host} port{port}')
