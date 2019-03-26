@@ -2,6 +2,7 @@ from datetime import datetime
 
 
 def validate_request(raw):
+    #print(raw)
     request_time = raw.get('time')
     request_action = raw.get('action')
     if request_time and request_action:

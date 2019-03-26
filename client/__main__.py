@@ -19,7 +19,7 @@ port — tcp-порт на сервере,
 import re
 import sys
 import argparse
-import socket
+from socket import socket, AF_INET, SOCK_STREAM
 import json
 import hashlib
 from datetime import datetime
@@ -42,7 +42,7 @@ args = parser.parse_args(sys.argv[1:])
 port = int(re.search('[0-9]{2,}', args.port).group(0))
 
 try:
-    sock = socket.socket()
+    sock = socket(AF_INET, SOCK_STREAM)
     sock.connect((args.host, port))
 
     if args.mode == 'w':
@@ -76,16 +76,26 @@ try:
         
             sock.send(msg_action.encode())
              """
+            # получить ответ сервера;
+            data = sock.recv(1024)
+            response = json.loads(
+                data.decode('utf-8')
+            )
+            # разобрать сообщение сервера;
 
+            if response.get('response') == 200:
+                if response.get('alert'):
+                    logger.debug(f"Response Message: {response.get('alert')}")
+                    print(
+                        f"Response Message: {response.get('alert')}"
+                    )
+            else:
+                logger.critical(f"Error request: {response.get('error')}")
     else:
-        while True:
-            rlist, wlist, xlist = select.select([], [sock], [], 0)
-
-            response = sock.recv(1024)
-
-            if response:
-                print(response.decode())
-                break
+        while True:  # Постоянный опрос сервера
+            tm = sock.recv(1024)
+            print("Текущее время: %s" % tm.decode('utf-8'))
+        s.close()
 except KeyboardInterrupt:
     logger.info(f"client closed")
     sock.close()
