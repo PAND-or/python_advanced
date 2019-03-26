@@ -9,7 +9,6 @@ import select
 
 
 
-
 from protocol import (
     validate_request, make_response,
     make_400, make_404
@@ -24,6 +23,8 @@ def createParser():
     parser.add_argument('-p', '--port',  nargs='?', default='7777')
     return parser
 
+def get_client_fullname(host, port):
+    return f'{ host }:{ port }'
 
 parser = createParser()
 args = parser.parse_args(sys.argv[1:])
@@ -33,45 +34,57 @@ sock = socket.socket()
 sock.bind((args.addr, int(args.port)))
 sock.listen(5)
 
-responses = []
+requests = []
 connections = []
+
+
 
 try:
     while True:
         # принимает сообщение клиента;
+
         client, address = sock.accept()
-        connections.append(client)
+        client_full_name = get_client_fullname(*address)
+        connections.append((client_full_name, client))
+
+        client_sockets = list(map(lambda item: item[1], connections))
 
         logger.info(f'Client detected {address}')
 
-        rlist, wlist, xlist = select.select(connections, connections, [], 0)
+        rlist, wlist, xlist = select.select(client_sockets, client_sockets, [], 0)
 
-        for client in connections:
-            if client in rlist: #соеденения на запись
-                data = client.recv(1024)
-                request = json.loads(
-                    data.decode('utf-8')
+        for client in wlist:
+            read_client_host, read_client_port = client.getsockname()
+            read_client_fullname = get_client_fullname(
+                read_client_host,
+                read_client_port
+            )
+            data = client.recv(1024)
+            request = json.loads(data.decode('utf-8'))
+            requests.append((read_client_fullname, request))
+
+        print(requests)
+
+        if requests:
+            request_client_fullname, request = requests.pop()
+            response = handle_client_request(request)
+
+            print(request_client_fullname, request)
+            for client in rlist:
+                print('2' * 50)
+                write_client_host, write_client_port = client.getsockname()
+                write_client_fullname = get_client_fullname(
+                    write_client_host,
+                    write_client_port
                 )
-                action_name = request.get('action')
-                response = handle_client_request(request)
 
-                if response.get('code') == 400:
-                    logger.error(f'Bad Request: { action_name } request: { request }')
+                if write_client_fullname != write_client_fullname:
+                    response_string = json.dumps(response)
+                    client.send(response_string.encode('utf-8'))
+                    logger.info(
+                        f'Response { response_string } sended to {client.getsockname()}'
+                    )
 
-                if response.get('code') == 200:
-                    responses.append(response)
-                response_string = json.dumps(response)
-                client.send(response_string.encode('utf-8'))
-
-            if client in wlist: #соеденения слушатели
-               if responses:
-                   for conn in wlist:
-                       response_obj_string = json.dumps(responses)
-                       conn.send(response_obj_string.encode('utf-8'))
-            if client in xlist:
-                pass
-        #client.close()
-        #logger.info(f"client {address} closed")
 except KeyboardInterrupt:
     logger.info(f"server {address} closed")
     sock.close()

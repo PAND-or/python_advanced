@@ -24,6 +24,7 @@ import json
 import hashlib
 from datetime import datetime
 from client_log_config import logger
+import select
 
 
 def createParser():
@@ -75,46 +76,16 @@ try:
         
             sock.send(msg_action.encode())
              """
-            while True:
-                # получить ответ сервера;
-                data = sock.recv(1024)
-                response = json.loads(
-                    data.decode('utf-8')
-                )
-                # разобрать сообщение сервера;
-
-                if response.get('response') == 200:
-                    if response.get('alert'):
-                        logger.debug(f"Response Message: {response.get('alert')}")
-                        print(
-                            f"Response Message: {response.get('alert')}"
-                        )
-                    sock.close()
-                    break
-                else:
-                    logger.critical(f"Error request: {response.get('error')}")
 
     else:
         while True:
-            # получить ответ сервера;
-            data = sock.recv(1024)
-            response = json.loads(
-                data.decode('utf-8')
-            )
-            # разобрать сообщение сервера;
+            rlist, wlist, xlist = select.select([], [sock], [], 0)
 
-            if response.get('response') == 200:
-                if response.get('alert'):
-                    logger.debug(f"Response Message: {response.get('alert')}")
-                    print(
-                        f"Response Message: {response.get('alert')}"
-                    )
-                sock.close()
+            response = sock.recv(1024)
+
+            if response:
+                print(response.decode())
                 break
-            else:
-                logger.critical(f"Error request: {response.get('error')}")
-
-    #sock.close()
 except KeyboardInterrupt:
     logger.info(f"client closed")
     sock.close()
