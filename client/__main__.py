@@ -27,7 +27,7 @@ from client_log_config import logger
 import select
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('host', nargs='?', default='localhost')
     parser.add_argument('port',  nargs='?', default='7777')
@@ -35,17 +35,41 @@ def createParser():
     return parser
 
 
+def read_response(response, mode='w'):
+    response = json.loads(
+        data.decode('utf-8')
+    )
+    # разобрать сообщение сервера;
 
-parser = createParser()
+    if response.get('response') == 200:
+        if response.get('alert'):
+            if mode == 'w':
+                logger.debug(f"Response Message: {response.get('alert')}")
+                print(
+                    f"Response Message: {response.get('alert')}"
+                )
+            else:
+                print(
+                    f"{response.get('user')['account_name']}: {response.get('user')['status']}\n",
+                    f"Server: {response.get('alert')}"
+                )
+    else:
+        logger.critical(f"Error request: {response.get('error')}")
+
+
+parser = create_parser()
 args = parser.parse_args(sys.argv[1:])
 
 port = int(re.search('[0-9]{2,}', args.port).group(0))
+
+
 
 try:
     sock = socket(AF_INET, SOCK_STREAM)
     sock.connect((args.host, port))
 
     if args.mode == 'w':
+        username = input("Enter user Name: ")
         while True:
             # сформировать presence-сообщение;
             # В формате JIM
@@ -59,8 +83,8 @@ try:
                     "time": datetime.now().timestamp(),
                     "type": "status",
                     "user": {
-                            "account_name":  input("Enter user Name: "),
-                            "status": input("Status message: ")
+                            "account_name":  username,
+                            "status": input("Your message: ")
                     }
                 }
             )
@@ -78,24 +102,12 @@ try:
              """
             # получить ответ сервера;
             data = sock.recv(1024)
-            response = json.loads(
-                data.decode('utf-8')
-            )
-            # разобрать сообщение сервера;
-
-            if response.get('response') == 200:
-                if response.get('alert'):
-                    logger.debug(f"Response Message: {response.get('alert')}")
-                    print(
-                        f"Response Message: {response.get('alert')}"
-                    )
-            else:
-                logger.critical(f"Error request: {response.get('error')}")
+            read_response(data)
     else:
         while True:  # Постоянный опрос сервера
-            tm = sock.recv(1024)
-            print("Текущее время: %s" % tm.decode('utf-8'))
-        s.close()
+            data = sock.recv(1024)
+            read_response(data, 'r')
+        #sock.close()
 except KeyboardInterrupt:
     logger.info(f"client closed")
     sock.close()

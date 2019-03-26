@@ -9,5 +9,5 @@ def send_presence(request):
     return make_response(
         request,
         200,
-        alert=f"Hi {user['account_name']}"
+        alert=f"{user['account_name']} Your message is send "
     )

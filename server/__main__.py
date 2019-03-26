@@ -30,40 +30,39 @@ def get_client_fullname(host, port):
 def read_requests(r_clients, all_clients):
    """ Чтение запросов из списка клиентов
    """
-   responses = {}  # Словарь ответов сервера вида {сокет: запрос}
+   responses = []
    #print('read_requests')
    for sock in r_clients:
        try:
            print('client 1')
            data = sock.recv(1024).decode('utf-8')
-           responses[sock] = json.loads(data)
+           #responses[sock] = json.loads(data)
+           responses.append(json.loads(data))
            print(responses[sock])
        except:
            print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
-           all_clients.remove(sock)
+           #all_clients.remove(sock)
 
    return responses
 
 
 def write_responses(requests, w_clients, all_clients):
-   """ Эхо-ответ сервера клиентам, от которых были запросы
-   """
-
-   for sock in w_clients:
-       if sock in requests:
-           #print('write_responses')
-           response = handle_client_request(requests[sock])
-           response_string = json.dumps(response)
-
-           try:
-               # Подготовить и отправить ответ сервера
-                print('Сообщение отправлено')
+    for req in requests:
+        #print('write_responses')
+        #print(req)
+        # Разобрать все запросы
+        response = handle_client_request(req)
+        response_string = json.dumps(response)
+        for sock in w_clients:
+            try:
+                # отправить всем
                 sock.send(response_string.encode('utf-8'))
-           except:  # Сокет недоступен, клиент отключился
-               print('Клиент {} {} отключилсяя'.format(sock.fileno(), sock.getpeername()))
+                #print('Сообщение отправлено')
+            except:  # Сокет недоступен, клиент отключился
+               print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
                #sock.close()
                #all_clients.remove(sock)
-
+        requests.remove(req)
 
 
 parser = createParser()
