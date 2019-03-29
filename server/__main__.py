@@ -7,7 +7,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 import argparse
 import select
 import threading
-
+import collections
 
 
 from protocol import (
@@ -47,23 +47,22 @@ def read_requests(sock, all_clients):
   #return responses
 
 
-def write_responses(req, w_clients, all_clients):
+def write_responses(req, sock, all_clients):
 #for req in requests:
         #print('write_responses')
         #print(req)
         # Разобрать все запросы
         response = handle_client_request(req)
         response_string = json.dumps(response)
-        for sock in w_clients:
-            try:
-                # отправить всем
-                sock.send(response_string.encode('utf-8'))
-                #print('Сообщение отправлено')
-            except:  # Сокет недоступен, клиент отключился
-               print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
-               #sock.close()
-               #all_clients.remove(sock)
-        requests.remove(req)
+    #for sock in w_clients:
+        try:
+            # отправить всем
+            sock.send(response_string.encode('utf-8'))
+            #print('Сообщение отправлено')
+        except:  # Сокет недоступен, клиент отключился
+           print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
+           #sock.close()
+           #all_clients.remove(sock)
 
 
 parser = createParser()
@@ -75,10 +74,9 @@ sock.bind((args.addr, int(args.port)))
 sock.listen(5)
 sock.settimeout(0.2)
 
-requests = []
+requests = collections.deque()
 connections = []
 clients = []
-
 
 try:
     while True:
@@ -99,7 +97,7 @@ try:
             try:
                 r, w, e = select.select(clients, clients, [], wait)
                 responses = []
-                requests = []
+
                 for sock in r:
                     #print('r:', len(r), ' w:', len(w), ' e:', len(e))
                     read_thred = threading.Thread(
@@ -108,9 +106,10 @@ try:
                     read_thred.start()
                 # requests = read_requests(r, clients)  # Сохраним запросы клиентов
                 if requests:
-                    for req in requests:
+                    request = requests.popleft()
+                    for sock in w:
                         write_thred = threading.Thread(
-                            target=write_responses, args=(req, w, clients)
+                            target=write_responses, args=(request, sock, clients)
                         )
                         write_thred.start()
                     #write_responses(requests, w, clients)  # Выполним отправку ответов
