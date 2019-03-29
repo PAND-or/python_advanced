@@ -46,12 +46,12 @@ def read_response(response, mode='w'):
             if mode == 'w':
                 logger.debug(f"Response Message: {response.get('alert')}")
                 print(
-                    f"Response Message: {response.get('alert')}"
+                    f"{response.get('alert')}"
                 )
             else:
                 print(
                     f"{response.get('user')['account_name']}: {response.get('user')['status']}\n",
-                    f"Server: {response.get('alert')}"
+                    f"{response.get('alert')}"
                 )
     else:
         logger.critical(f"Error request: {response.get('error')}")
@@ -77,32 +77,99 @@ try:
             hash_obj = hashlib.sha1()
             hash_obj.update(b'secret_key')
 
+            user = {
+                "account_name":  username,
+                "status": 'Online'
+            }
+
             msg_presence = json.dumps(
                 {
                     "action": "presence",
                     "time": datetime.now().timestamp(),
                     "type": "status",
-                    "user": {
-                            "account_name":  username,
-                            "status": input("Your message: ")
-                    }
+                    "user": user
                 }
             )
-            # отправить сообщение серверу;
             sock.send(msg_presence.encode())
-            """
-            msg_action = json.dumps(
-                {
-                    "action": input("Enter action (lower_text): "),
-                    "data": input("Enter data: ")
-                }
-            )
-        
-            sock.send(msg_action.encode())
-             """
-            # получить ответ сервера;
             data = sock.recv(1024)
-            read_response(data)
+
+            while True:
+                action = input("Enter action (chat, p2p, text, exit): ")
+                if action == 'exit':
+                    logger.info(f"client closed")
+                    sock.close()
+                    break
+                elif action == 'text':
+                    msg_action = json.dumps(
+                        {
+                            "action": input("Enter action (lower_text, upper_text): "),
+                            "data": input("Enter data: "),
+                            "user": user
+                        }
+                    )
+                    sock.send(msg_action.encode())
+                    # получить ответ сервера;
+                    data = sock.recv(1024)
+                    read_response(data)
+                elif action == 'chat':
+                    join_request = json.dumps(
+                        {
+                            "action": "join",
+                            "time": datetime.now().timestamp(),
+                            "room": "#common",
+                            "user": user
+                        }
+                    )
+                    sock.send(join_request.encode())
+                    data = sock.recv(1024)
+                    while True:
+                        message = input("Enter message (or exit): ")
+                        if message == 'exit':
+                            leave_request = json.dumps(
+                                {
+                                    "action": "leave",
+                                    "time": datetime.now().timestamp(),
+                                    "room": "#common",
+                                    "user": user
+                                }
+                            )
+                            sock.send(leave_request.encode())
+                            break
+                        chat_request = json.dumps({
+                            "action": "msg",
+                            "time": datetime.now().timestamp(),
+                            "to": '#common',
+                            "from": username,
+                            "encoding": "utf-8",
+                            "message": message,
+                            "user": user
+                        })
+                        # отправить сообщение серверу;
+                        sock.send(chat_request.encode())
+                        # получить ответ сервера;
+                        data = sock.recv(1024)
+                        read_response(data)
+                elif action == 'p2p':
+                    sendto = input("Enter user_name for send: ")
+                    while True:
+                        message = input("Enter message (or exit): ")
+                        if message == 'exit':
+                            break
+
+                        p2p_request = json.dumps({
+                            "action": "msg",
+                            "time": datetime.now().timestamp(),
+                            "to": sendto,
+                            "from": username,
+                            "encoding": "utf-8",
+                            "message": message,
+                            "user": user
+                        })
+                        # отправить сообщение серверу;
+                        sock.send(p2p_request.encode())
+                        # получить ответ сервера;
+                        data = sock.recv(1024)
+                        read_response(data)
     else:
         while True:  # Постоянный опрос сервера
             data = sock.recv(1024)

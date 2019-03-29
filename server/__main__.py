@@ -28,21 +28,21 @@ def get_client_fullname(host, port):
     return f'{ host }:{ port }'
 
 
-def read_requests(sock, all_clients):
+def read_requests(sock, allclients):
    """ Чтение запросов из списка клиентов
    """
    #responses = []
    #print('read_requests')
 #for sock in r_clients:
    try:
-       print('client 1')
        data = sock.recv(1024).decode('utf-8')
        #responses[sock] = json.loads(data)
+       #print(responses[sock])
        requests.append(json.loads(data))
-       print(requests[sock])
+       #print(requests[sock])
    except:
        print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
-       #all_clients.remove(sock)
+       clients.remove(sock)
 
   #return responses
 
@@ -75,6 +75,7 @@ sock.listen(5)
 sock.settimeout(0.2)
 
 requests = collections.deque()
+responses = collections.deque()
 connections = []
 clients = []
 
@@ -96,7 +97,7 @@ try:
 
             try:
                 r, w, e = select.select(clients, clients, [], wait)
-                responses = []
+
 
                 for sock in r:
                     #print('r:', len(r), ' w:', len(w), ' e:', len(e))
@@ -104,6 +105,7 @@ try:
                         target=read_requests, args=(sock, clients),
                     )
                     read_thred.start()
+
                 # requests = read_requests(r, clients)  # Сохраним запросы клиентов
                 if requests:
                     request = requests.popleft()

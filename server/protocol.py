@@ -10,10 +10,11 @@ def validate_request(raw):
     return False
 
 
-def make_response(request, code, data=None, error=None, alert=None):
+def make_response(request, code, send_to=None, send_from=None, data=None, error=None, alert=None):
     return {
         'action': request.get('action'),
-        'user': request.get('user'),
+        'to': send_to,
+        'from': send_from,
         'time': datetime.now().timestamp(),
         'data': data,
         'response': code,

@@ -10,12 +10,16 @@ from customlogging import stack_logging, StackLogging
 @login_required
 def get_upper_text(request):
     data = request.get('data')
-    if not data:
+    user = request.get('user')
+    print('upper')
+    if not data or not user:
         return make_400(request)
     return make_response(
         request,
         200,
-        data.upper()
+        data.upper(),
+        send_to=user['account_name'],
+        send_from=user['account_name'],
     )
 
 
@@ -25,10 +29,16 @@ def get_upper_text(request):
 @LoginRequired()
 def get_lower_text(request):
     data = request.get('data')
-    if not data:
+    user = request.get('user')
+    
+    print('lower')
+    print(data, user)
+    if not data or not user:
         return make_400(request)
     return make_response(
         request,
         200,
-        data.lower()
+        data.lower(),
+        send_to=user['account_name'],
+        send_from=user['account_name'],
     )

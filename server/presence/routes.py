@@ -1,6 +1,6 @@
-from .controllers import send_presence
+from .controllers import jim_presence
 
 
 routes = [
-    {'action': 'presence', 'controller': send_presence}
+    {'action': 'presence', 'controller': jim_presence}
 ]
